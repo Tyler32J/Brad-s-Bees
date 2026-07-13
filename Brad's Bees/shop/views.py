@@ -100,23 +100,12 @@ def _build_cart_context(cart):
 
 
 def _send_order_notification(order, cart_items):
-    """Email order details to business inbox and customer email when available."""
+    """Email full order details to the business inbox."""
     default_from = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
     primary_recipient = (getattr(settings, "ORDER_NOTIFICATION_EMAIL", "") or "").strip()
 
     if not default_from or not primary_recipient:
         return "not_configured"
-
-    recipients = []
-
-    if primary_recipient:
-        recipients.append(primary_recipient)
-    if order.email:
-        recipients.append(order.email)
-
-    recipients = list(dict.fromkeys(recipients))
-    if not recipients:
-        return "skipped"
 
     item_lines = []
     for item in cart_items:
@@ -127,7 +116,7 @@ def _send_order_notification(order, cart_items):
         )
 
     message = "\n".join([
-        f"New order received: #{order.id}",
+        f"New Brad's Bees order received: #{order.id}",
         "",
         "Customer:",
         f"{order.first_name} {order.last_name}",
@@ -151,10 +140,10 @@ def _send_order_notification(order, cart_items):
 
     try:
         send_mail(
-            subject=f"New Brad's Bees Order #{order.id}",
+            subject=f"Brad's Bees Order #{order.id} - Full Details",
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=recipients,
+            recipient_list=[primary_recipient],
             fail_silently=False,
         )
         return "sent"

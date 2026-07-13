@@ -7,6 +7,44 @@ from .models import *
 
 # Create your views here.
 
+def _send_auto_reply(submission, files):
+    default_from = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
+
+    if not default_from or not submission.email:
+        return
+
+    reply_subject = f"Brad's Bees Submission #{submission.id} - Confirmation"
+    reply_body = f"""
+New Brad's Bees submission received.
+
+Customer:
+{submission.name}
+Email: {submission.email}
+Phone: {submission.phone}
+
+Service Requested:
+{submission.service}
+
+Message:
+{submission.message}
+
+Thank you for reaching out. We will review your submission and get back to you soon.
+If you need immediate assistance, you can call us at 985-612-0241.
+"""
+
+    reply_email = EmailMessage(
+        subject=reply_subject,
+        body=reply_body.strip(),
+        from_email=default_from,
+        to=[submission.email],
+    )
+
+    for f in files:
+        f.seek(0)
+        reply_email.attach(f.name, f.read(), f.content_type)
+
+    reply_email.send(fail_silently=False)
+
 def contact_view(request):
     if request.method == "POST":
         form = SubmissionForm(request.POST, request.FILES)
@@ -116,6 +154,7 @@ def contact_view(request):
                 result = email.send()
 
                 print(f"Email send result: {result}")
+                _send_auto_reply(submission, files)
                 messages.success(request, "Form submitted successfully!")
             except Exception as e:
                 print(f"Email send failed: {e}")
