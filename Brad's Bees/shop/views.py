@@ -101,14 +101,12 @@ def _build_cart_context(cart):
 
 def _send_order_notification(order, cart_items):
     """Email order details to business inbox and customer email when available."""
-    email_user = (getattr(settings, "EMAIL_HOST_USER", "") or "").strip()
-    email_password = (getattr(settings, "EMAIL_HOST_PASSWORD", "") or "").strip()
     default_from = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
+    primary_recipient = (getattr(settings, "ORDER_NOTIFICATION_EMAIL", "") or "").strip()
 
-    if not email_user or not email_password or not default_from:
+    if not default_from or not primary_recipient:
         return "not_configured"
 
-    primary_recipient = getattr(settings, "ORDER_NOTIFICATION_EMAIL", None)
     recipients = []
 
     if primary_recipient:
@@ -300,7 +298,7 @@ def checkout_view(request):
             if email_status == "not_configured":
                 messages.warning(
                     request,
-                    "Order saved, but email is not configured yet. Add EMAIL_HOST_USER and EMAIL_HOST_PASSWORD in your .env file.",
+                    "Order saved, but email is not configured yet. Set DEFAULT_FROM_EMAIL and ORDER_NOTIFICATION_EMAIL in your .env file.",
                 )
             if email_status == "failed":
                 messages.warning(request, "Order saved, but email notification could not be sent.")

@@ -32,11 +32,11 @@ SECRET_KEY = 'django-insecure-v_8r(qj@iku8q#w37tfo*3c-kxndlqvx+q88=uy-2_u-29zl!t
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 # DEBUG = False
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'brads-bees-production.up.railway.app',
-]
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1,brads-bees-production.up.railway.app,bradsbees.org',
+    cast=Csv(),
+)
 
 
 # Application definition
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'anymail',
     'app',
     'shop',
     'contact'
@@ -139,42 +140,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # MOVE BELOW TO ENVIRONMENT VARIABLES
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+ANYMAIL = {
+    "RESEND_API_KEY": os.getenv("RESEND_API_KEY", ""),
+}
 
-EMAIL_HOST_USER = os.getenv('GMAIL_EMAIL')
-EMAIL_HOST_PASSWORD = os.getenv('GMAIL_APP_PASSWORD')
-
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
-ORDER_NOTIFICATION_EMAIL = os.getenv('ORDER_NOTIFICATION_EMAIL')
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+ORDER_NOTIFICATION_EMAIL = os.getenv("ORDER_NOTIFICATION_EMAIL")
 
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.sendgrid.net'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'apikey'
-# EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
-# DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
-# ORDER_NOTIFICATION_EMAIL = os.getenv('ORDER_NOTIFICATION_EMAIL')
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'bradbessetti@gmail.com').strip()
-# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '').strip()
-
-# DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER).strip()
-# ORDER_NOTIFICATION_EMAIL = os.getenv('ORDER_NOTIFICATION_EMAIL', EMAIL_HOST_USER).strip()
-# RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY', '').strip()
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://brads-bees-production.up.railway.app",
-]
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://brads-bees-production.up.railway.app',
+    cast=Csv(),
+)
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
